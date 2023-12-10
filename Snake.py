@@ -1,5 +1,6 @@
 """
-Creates food for the snake to eat
+Creates obstacle block which results in game over if hit
+Snake now gets longer when it hits food
 """
 
 import pygame
@@ -123,7 +124,7 @@ def gameLoop():   # game function
     time.sleep(2)
 
     pygame.quit()
-    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nLMAO ur bad\n\n\n\n\n\n")
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThanks for playing!\n\n\n\n\n\n")
     quit()
 
 # this calls the gameLoop function

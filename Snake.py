@@ -1,19 +1,14 @@
 """
-1st Attempt at Object Oriented Version
+2nd (FUNCTIONAL) Attempt at Object Oriented Version
 """
 
 import pygame
+import random
 
-class Game:
+class SnakeGame:
     def __init__(self):
         pygame.init()
-
-        std_block = 50
-        self.window_x = 1500
-        self.window_y = 800
-
-        self.size = (std_block)
-        
+       
         # color declarations  
         self.white = (255, 255, 255)
         self.black = (0, 0, 0)
@@ -22,67 +17,152 @@ class Game:
         self.blue = (0, 0, 255)
         self.yellow = (255, 255, 0)
 
-        self.dis = pygame.display.set_mode((self.window_x, self.window_y))
-        pygame.display.set_caption('Snake Game by Ziven')
-        self.game_over = False
-        self.clock = pygame.time.Clock()
-        self.snake = Movement()
+        self.dis_width = 1500
+        self.dis_height = 800
 
-    def handle_input(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.game_over = True
-            self.snake.handle_input(event)
+        self.dis = pygame.display.set_mode((self.dis_width, self.dis_height))
+        pygame.display.set_caption('Snake Game by Ziven')
+        
+        self.clock = pygame.time.Clock()
+
+        self.snake_block = 30
+        self.snake_change = 10
+        self.snake_speed = 20
+
+        # declares fonts
+        self.font_style = pygame.font.SysFont("bahnschrift", 55)
+        self.score_font = pygame.font.SysFont("arialsms", 75)
+
+    # SnakeGame methods
+    def your_score(self, score):
+        value = self.score_font.render("Your Score: " + str(score), True, self.white)
+        self.dis.blit(value, [20, 20])
+
+    def our_snake(self, snake_list):
+        for x in snake_list:
+            pygame.draw.rect(self.dis, self.green, [x[0], x[1], self.snake_block, self.snake_block])
+
+    def message(self, msg, color):
+        mesg = self.font_style.render(msg, True, color)
+        self.dis.blit(mesg, [self.dis_width / 6, self.dis_height / 3])
 
     def game_loop(self):
-        while not self.game_over:
-            self.handle_input()
-            self.snake.move()
+        game_over = False
+        game_close = False
+
+        x1 = self.dis_width / 2
+        y1 = self.dis_height / 2
+
+        x1_change = 0
+        y1_change = 0
+
+        snake_list = []
+        length_of_snake = 1
+
+        foodx = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
+        foody = round(random.randrange(0, self.dis_height - self.snake_block) / 10.0) * 10.0
+
+        ntol = 20
+        ptol = 35
+
+        ### starting screen here
+        start = False
+        while start == False:
             self.dis.fill(self.black)
-            pygame.draw.rect(self.dis, self.green, [self.snake.x, self.snake.y, self.size, self.size])
+            # top text
+            self.score_font = pygame.font.SysFont("arialsms", 150)
+            mesg = self.score_font.render("Hungry Python Reptile", True, self.green)
+            self.dis.blit(mesg, [self.dis_width /5 - 90, self.dis_height / 2 - 150])  #the Game!
+            self.score_font = pygame.font.SysFont("arialsms", 100)
+            mesg = self.score_font.render("the Game", True, self.green)
+            self.dis.blit(mesg, [self.dis_width /3 + 85, self.dis_height / 2 - 30])
+            # middle text
+            self.score_font = pygame.font.SysFont("arialsms", 65)
+            mesg2 = self.score_font.render("EECE 2140 Final Project: Ziven Lopez", True, self.white)
+            self.dis.blit(mesg2, [self.dis_width /6 + 100, self.dis_height / 2 + 100])
+            # bottom text
+            self.score_font = pygame.font.SysFont("arialsms", 35)
+            mesg3 = self.score_font.render("(Press any key to continue)", True, self.red)
+            self.dis.blit(mesg3, [self.dis_width /3 + 85, self.dis_height / 2 + 200])
+
             pygame.display.update()
-            self.clock.tick(30)
+
+            
+            
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    start = True      
+
+        self.font_style = pygame.font.SysFont("bahnschrift", 55)
+        self.score_font = pygame.font.SysFont("arialsms", 75)
+
+        while not game_over:
+            while game_close:
+                self.dis.fill(self.black)
+                mesg = self.font_style.render("You Lost! Press C-Play Again or Q-Quit", True, self.red)
+                self.dis.blit(mesg, [self.dis_width / 6, self.dis_height / 2])
+                self.your_score(length_of_snake - 1)
+                pygame.display.update()
+
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_q:
+                            game_over = True
+                            game_close = False
+                        if event.key == pygame.K_c:
+                            self.game_loop()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_over = True
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        x1_change = -self.snake_change
+                        y1_change = 0
+                    elif event.key == pygame.K_RIGHT:
+                        x1_change = self.snake_change
+                        y1_change = 0
+                    elif event.key == pygame.K_UP:
+                        y1_change = -self.snake_change
+                        x1_change = 0
+                    elif event.key == pygame.K_DOWN:
+                        y1_change = self.snake_change
+                        x1_change = 0
+
+            if x1 >= self.dis_width or x1 < 0 or y1 >= self.dis_height or y1 < 0:
+                game_close = True
+
+            x1 += x1_change
+            y1 += y1_change
+            self.dis.fill(self.black)
+            pygame.draw.rect(self.dis, self.yellow, [foodx, foody, self.snake_block, self.snake_block])
+            snake_head = []
+            snake_head.append(x1)
+            snake_head.append(y1)
+            snake_list.append(snake_head)
+            if len(snake_list) > length_of_snake:
+                del snake_list[0]
+
+            for x in snake_list[:-1]:
+                if x == snake_head:
+                    game_close = True
+
+            self.our_snake(snake_list)
+            self.your_score(length_of_snake - 1)
+
+            pygame.display.update()
+            
+            if x1 >= foodx - ntol and x1 <= foodx + ptol and y1 >= foody - ntol and y1 <= foody + ptol:
+                foodx = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
+                foody = round(random.randrange(0, self.dis_height - self.snake_block) / 10.0) * 10.0
+                length_of_snake += 1
+
+            self.clock.tick(self.snake_speed)
 
         pygame.quit()
-        quit()
-
-class Movement:
-    def __init__(self, x=300, y=300):
-        self.x = x
-        self.y = y
-        self.x_change = 0
-        self.y_change = 0
-
-    def handle_input(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                self.x_change = -10
-                self.y_change = 0
-            elif event.key == pygame.K_RIGHT:
-                self.x_change = 10
-                self.y_change = 0
-            elif event.key == pygame.K_UP:
-                self.y_change = -10
-                self.x_change = 0
-            elif event.key == pygame.K_DOWN:
-                self.y_change = 10
-                self.x_change = 0
-
-    def move(self):
-        self.x += self.x_change
-        self.y += self.y_change
-        if self.x < 0:
-            self.x = Game().window_x
-        elif self.x > Game().window_x:
-            self.x = 0
-        if self.y < 0:
-            self.y = Game().window_y
-        elif self.y > Game().window_y:
-            self.y = 0
-
-def main():
-    snake_game = Game()
-    snake_game.game_loop()
+        quit()    
 
 if __name__ == "__main__":
-    main()
+
+    game = SnakeGame()
+    game.game_loop()

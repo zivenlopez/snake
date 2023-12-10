@@ -5,6 +5,33 @@
 import pygame
 import random
 
+class Food:
+    def __init__(self, dis_width, dis_height, snake_block):
+        self.foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
+        self.foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
+        self.ntol = 20
+        self.ptol = 35
+    
+    def draw_food(self, dis, snake_block, yellow):
+        pygame.draw.rect(dis, yellow, [self.foodx, self.foody, snake_block, snake_block])
+
+    def update_position(self, dis_width, dis_height, snake_block):
+        self.foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
+        self.foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
+
+class Obstacle:
+    def __init__(self, dis_width, dis_height, snake_block):
+        self.obstx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
+        self.obsty = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
+        self.ntol = 20
+        self.ptol = 35
+
+    def draw_obstacle(self, dis, snake_block, red):
+        pygame.draw.rect(dis, red, [self.obstx, self.obsty, snake_block, snake_block])
+
+    def check_collision(self, x, y, snake_block):
+        return x >= self.obstx - self.ntol and x <= self.obstx + self.ptol and y >= self.obsty - self.ntol and y <= self.obsty + self.ptol
+
 class SnakeGame:
     def __init__(self):
         pygame.init()
@@ -20,14 +47,18 @@ class SnakeGame:
         self.dis_width = 1500
         self.dis_height = 800
 
-        self.dis = pygame.display.set_mode((self.dis_width, self.dis_height))
-        pygame.display.set_caption('Snake Game by Ziven')
-        
-        self.clock = pygame.time.Clock()
-
         self.snake_block = 30
         self.snake_change = 10
         self.snake_speed = 20
+
+        # food and obstacle classes utilized
+        self.food = Food(self.dis_width, self.dis_height, self.snake_block)  #create food instance
+        self.obstacle = Obstacle(self.dis_width, self.dis_height, self.snake_block)  # create obstacle instance
+
+        self.dis = pygame.display.set_mode((self.dis_width, self.dis_height))
+        pygame.display.set_caption('Snake Game by Ziven')
+        
+        self.clock = pygame.time.Clock()  
 
         # declares fonts
         self.font_style = pygame.font.SysFont("bahnschrift", 55)
@@ -58,9 +89,6 @@ class SnakeGame:
 
         snake_list = []
         length_of_snake = 1
-
-        foodx = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
-        foody = round(random.randrange(0, self.dis_height - self.snake_block) / 10.0) * 10.0
 
         ntol = 20
         ptol = 35
@@ -134,8 +162,14 @@ class SnakeGame:
 
             x1 += x1_change
             y1 += y1_change
+
             self.dis.fill(self.black)
-            pygame.draw.rect(self.dis, self.yellow, [foodx, foody, self.snake_block, self.snake_block])
+
+            # Drawing food
+            self.food.draw_food(self.dis, self.snake_block, self.yellow)
+             # Drawing obstacle
+            self.obstacle.draw_obstacle(self.dis, self.snake_block, self.red)
+            
             snake_head = []
             snake_head.append(x1)
             snake_head.append(y1)
@@ -152,10 +186,14 @@ class SnakeGame:
 
             pygame.display.update()
             
-            if x1 >= foodx - ntol and x1 <= foodx + ptol and y1 >= foody - ntol and y1 <= foody + ptol:
-                foodx = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
-                foody = round(random.randrange(0, self.dis_height - self.snake_block) / 10.0) * 10.0
+            # Checking collision with food
+            if x1 >= self.food.foodx - self.food.ntol and x1 <= self.food.foodx + self.food.ptol and y1 >= self.food.foody - self.food.ntol and y1 <= self.food.foody + self.food.ptol:
+                self.food.update_position(self.dis_width, self.dis_height, self.snake_block)
                 length_of_snake += 1
+
+            # Check collision with obstacle
+            if self.obstacle.check_collision(x1, y1, self.snake_block):
+                game_close = True  # Game over due to collision with obstacle
 
             self.clock.tick(self.snake_speed)
 

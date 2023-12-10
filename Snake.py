@@ -90,19 +90,18 @@ class SnakeGame:
         snake_list = []
         length_of_snake = 1
 
-        ntol = 20
-        ptol = 35
-
         ### starting screen here
         start = False
         while start == False:
             self.dis.fill(self.black)
+            image = pygame.image.load("snake_skin.PNG")
+            self.dis.blit(image, (0,0))
             # top text
             self.score_font = pygame.font.SysFont("arialsms", 150)
-            mesg = self.score_font.render("Hungry Python Reptile", True, self.green)
+            mesg = self.score_font.render("Hungry Python Reptile", True, self.yellow)
             self.dis.blit(mesg, [self.dis_width /5 - 90, self.dis_height / 2 - 150])  #the Game!
             self.score_font = pygame.font.SysFont("arialsms", 100)
-            mesg = self.score_font.render("the Game", True, self.green)
+            mesg = self.score_font.render("the Game", True, self.yellow)
             self.dis.blit(mesg, [self.dis_width /3 + 85, self.dis_height / 2 - 30])
             # middle text
             self.score_font = pygame.font.SysFont("arialsms", 65)
@@ -114,8 +113,6 @@ class SnakeGame:
             self.dis.blit(mesg3, [self.dis_width /3 + 85, self.dis_height / 2 + 200])
 
             pygame.display.update()
-
-            
             
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -169,7 +166,7 @@ class SnakeGame:
             self.food.draw_food(self.dis, self.snake_block, self.yellow)
              # Drawing obstacle
             self.obstacle.draw_obstacle(self.dis, self.snake_block, self.red)
-            
+
             snake_head = []
             snake_head.append(x1)
             snake_head.append(y1)

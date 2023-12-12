@@ -1,11 +1,26 @@
 """
-2nd (FUNCTIONAL) Attempt at Object Oriented Version
+A python-based game in which the user controls a digital python.
+The goal is to eat as many yellow food particles as possible.
+But one must avoid running out of bounds, into red obstacles, or themselves.
 """
 
 import pygame
 import random
 
 class Food:
+    """
+    Represents the food in the snake game. Handles the position and drawing of food on the game display.
+    
+    Attributes:
+        foodx (float): The x-coordinate of the food.
+        foody (float): The y-coordinate of the food.
+        ntol (int): The negative tolerance for collision detection.
+        ptol (int): The positive tolerance for collision detection.
+        
+    Methods:
+        draw_food(dis, snake_block, yellow): Draws the food on the display.
+        update_position(dis_width, dis_height, snake_block): Updates the food's position randomly within the display boundaries.
+    """
     def __init__(self, dis_width, dis_height, snake_block):
         self.foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
         self.foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
@@ -20,19 +35,51 @@ class Food:
         self.foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
 
 class Obstacle:
-    def __init__(self, dis_width, dis_height, snake_block):
-        self.obstx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
-        self.obsty = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
+    """
+    Represents an obstacle in the snake game. Handles the position, drawing, and collision detection of the obstacle.
+
+    Attributes:
+        obstx (float): The x-coordinate of the obstacle.
+        obsty (float): The y-coordinate of the obstacle.
+        ntol (int): The negative tolerance for collision detection.
+        ptol (int): The positive tolerance for collision detection.
+        Methods:
+        draw_obstacle(dis, snake_block, red): Draws the obstacle on the display.
+        check_collision(x, y, snake_block): Checks if the snake has collided with the obstacle.
+    """
+    def __init__(self, dis_width, dis_height, snake_block, number_of_obstacles):
+        self.obstacles = []
+        for _ in range(number_of_obstacles):
+            self.obstacles.append({
+                'x': round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0,
+                'y': round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
+            })
         self.ntol = 20
         self.ptol = 35
 
     def draw_obstacle(self, dis, snake_block, red):
-        pygame.draw.rect(dis, red, [self.obstx, self.obsty, snake_block, snake_block])
+        for obstacle in self.obstacles:
+            pygame.draw.rect(dis, red, [obstacle['x'], obstacle['y'], snake_block, snake_block])
+
 
     def check_collision(self, x, y, snake_block):
-        return x >= self.obstx - self.ntol and x <= self.obstx + self.ptol and y >= self.obsty - self.ntol and y <= self.obsty + self.ptol
+        for obstacle in self.obstacles:
+            if x >= obstacle['x'] - self.ntol and x <= obstacle['x'] + self.ptol and y >= obstacle['y'] - self.ntol and y <= obstacle['y'] + self.ptol:
+                return True
+        return False
 
 class SnakeGame:
+    """
+    Main class for the snake game:
+    Initializes and controls the game flow, including display, snake, food, and obstacles.
+
+    Methods:
+        your_score(score): Displays the current score.
+        our_snake(snake_list): Draws the snake on the display.
+        message(msg, color): Displays a message on the screen.
+        game_loop(): Contains the main game loop, handling game logic and updates.
+    """
+    
     def __init__(self):
         pygame.init()
        
@@ -53,7 +100,9 @@ class SnakeGame:
 
         # food and obstacle classes utilized
         self.food = Food(self.dis_width, self.dis_height, self.snake_block)  #create food instance
-        self.obstacle = Obstacle(self.dis_width, self.dis_height, self.snake_block)  # create obstacle instance
+        
+        self.num_obstacles = 5   # Modify this to change the number of obstacles
+        self.obstacle = Obstacle(self.dis_width, self.dis_height, self.snake_block, self.num_obstacles)
 
         self.dis = pygame.display.set_mode((self.dis_width, self.dis_height))
         pygame.display.set_caption('Snake Game by Ziven')
@@ -63,6 +112,7 @@ class SnakeGame:
         # declares fonts
         self.font_style = pygame.font.SysFont("bahnschrift", 55)
         self.score_font = pygame.font.SysFont("arialsms", 75)
+
 
     # SnakeGame methods
     def your_score(self, score):
@@ -164,8 +214,9 @@ class SnakeGame:
 
             # Drawing food
             self.food.draw_food(self.dis, self.snake_block, self.yellow)
-             # Drawing obstacle
+             # Drawing multiple obstacles
             self.obstacle.draw_obstacle(self.dis, self.snake_block, self.red)
+
 
             snake_head = []
             snake_head.append(x1)
@@ -188,9 +239,10 @@ class SnakeGame:
                 self.food.update_position(self.dis_width, self.dis_height, self.snake_block)
                 length_of_snake += 1
 
-            # Check collision with obstacle
+            # Check collision with any obstacle
             if self.obstacle.check_collision(x1, y1, self.snake_block):
-                game_close = True  # Game over due to collision with obstacle
+                game_close = True  # Game over due to collision with any obstacle
+
 
             self.clock.tick(self.snake_speed)
 

@@ -34,6 +34,20 @@ class Food:
         self.foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
         self.foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
 
+class PowerUp(Food):
+    """
+    Represents a PowerUp in the snake game. Inherits from the Food class.
+
+    The PowerUp increases the snake's length by 5 when eaten.
+    It appears after a certain number of food particles have been eaten.
+    """
+    def __init__(self, dis_width, dis_height, snake_block):
+        super().__init__(dis_width, dis_height, snake_block)
+
+    def draw_powerup(self, dis, snake_block, color):
+        pygame.draw.rect(dis, color, [self.foodx, self.foody, snake_block, snake_block])
+
+
 class Obstacle:
     """
     Represents an obstacle in the snake game. Handles the position, drawing, and collision detection of the obstacle.
@@ -104,6 +118,10 @@ class SnakeGame:
         self.num_obstacles = 5   # Modify this to change the number of obstacles
         self.obstacle = Obstacle(self.dis_width, self.dis_height, self.snake_block, self.num_obstacles)
 
+        self.food_eaten = 0
+        self.powerup = PowerUp(self.dis_width, self.dis_height, self.snake_block)  # create powerup instance
+
+        # creates display window 
         self.dis = pygame.display.set_mode((self.dis_width, self.dis_height))
         pygame.display.set_caption('Snake Game by Ziven')
         
@@ -214,9 +232,11 @@ class SnakeGame:
 
             # Drawing food
             self.food.draw_food(self.dis, self.snake_block, self.yellow)
-             # Drawing multiple obstacles
+            # Drawing multiple obstacles
             self.obstacle.draw_obstacle(self.dis, self.snake_block, self.red)
-
+            # Drawing powerup if 10 food points have been eaten
+            if self.food_eaten >= 10:
+                self.powerup.draw_powerup(self.dis, self.snake_block, self.blue)
 
             snake_head = []
             snake_head.append(x1)
@@ -238,6 +258,11 @@ class SnakeGame:
             if x1 >= self.food.foodx - self.food.ntol and x1 <= self.food.foodx + self.food.ptol and y1 >= self.food.foody - self.food.ntol and y1 <= self.food.foody + self.food.ptol:
                 self.food.update_position(self.dis_width, self.dis_height, self.snake_block)
                 length_of_snake += 1
+                self.food_eaten += 1
+
+            if self.food_eaten >= 10 and x1 >= self.powerup.foodx - self.powerup.ntol and x1 <= self.powerup.foodx + self.powerup.ptol and y1 >= self.powerup.foody - self.powerup.ntol and y1 <= self.powerup.foody + self.powerup.ptol:
+                self.powerup.update_position(self.dis_width, self.dis_height, self.snake_block)
+                length_of_snake += 3  # Increase snake length by 3
 
             # Check collision with any obstacle
             if self.obstacle.check_collision(x1, y1, self.snake_block):

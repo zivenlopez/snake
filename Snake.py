@@ -115,7 +115,7 @@ class SnakeGame:
         # food and obstacle classes utilized
         self.food = Food(self.dis_width, self.dis_height, self.snake_block)  #create food instance
         
-        self.num_obstacles = 5   # Modify this to change the number of obstacles
+        self.num_obstacles = 10   # Modify this to change the number of obstacles
         self.obstacle = Obstacle(self.dis_width, self.dis_height, self.snake_block, self.num_obstacles)
 
         self.food_eaten = 0
@@ -161,24 +161,36 @@ class SnakeGame:
         ### starting screen here
         start = False
         while start == False:
+            # load snakeskin background
             self.dis.fill(self.black)
             image = pygame.image.load("snake_skin.PNG")
             self.dis.blit(image, (0,0))
+            
             # top text
             self.score_font = pygame.font.SysFont("arialsms", 150)
             mesg = self.score_font.render("Hungry Python Reptile", True, self.yellow)
-            self.dis.blit(mesg, [self.dis_width /5 - 90, self.dis_height / 2 - 150])  #the Game!
+            self.dis.blit(mesg, [self.dis_width /5 - 90, self.dis_height / 2 - 200])  #the Game!
             self.score_font = pygame.font.SysFont("arialsms", 100)
             mesg = self.score_font.render("the Game", True, self.yellow)
-            self.dis.blit(mesg, [self.dis_width /3 + 85, self.dis_height / 2 - 30])
+            self.dis.blit(mesg, [self.dis_width /3 + 85, self.dis_height / 2 - 80])
             # middle text
             self.score_font = pygame.font.SysFont("arialsms", 65)
             mesg2 = self.score_font.render("EECE 2140 Final Project: Ziven Lopez", True, self.white)
-            self.dis.blit(mesg2, [self.dis_width /6 + 100, self.dis_height / 2 + 100])
+            self.dis.blit(mesg2, [self.dis_width /6 + 100, self.dis_height / 2 + 50])
             # bottom text
             self.score_font = pygame.font.SysFont("arialsms", 35)
-            mesg3 = self.score_font.render("(Press any key to continue)", True, self.red)
-            self.dis.blit(mesg3, [self.dis_width /3 + 85, self.dis_height / 2 + 200])
+            mesg3 = self.score_font.render("(Press any key to continue)", True, self.green)
+            self.dis.blit(mesg3, [self.dis_width /3 + 85, self.dis_height / 2 + 150])
+            # Additional small messages
+            instruction_font = pygame.font.SysFont("arialsms", 30)
+            instruction1 = instruction_font.render("Eat yellow food to grow", True, self.yellow)
+            instruction2 = instruction_font.render("Avoid red obstacles", True, self.red)
+            instruction3 = instruction_font.render("Watch for blue powerups!", True, self.blue)
+
+            self.dis.blit(instruction1, [self.dis_width / 4 - 300, self.dis_height / 2 + 175])   # left
+            self.dis.blit(instruction2, [self.dis_width / 3 + 140, self.dis_height / 2 + 275])   # middle
+            self.dis.blit(instruction3, [self.dis_width / 2 + 350, self.dis_height / 2 + 175])   # right
+
 
             pygame.display.update()
             
@@ -254,20 +266,21 @@ class SnakeGame:
 
             pygame.display.update()
             
-            # Checking collision with food
+            # checking collision with food
             if x1 >= self.food.foodx - self.food.ntol and x1 <= self.food.foodx + self.food.ptol and y1 >= self.food.foody - self.food.ntol and y1 <= self.food.foody + self.food.ptol:
                 self.food.update_position(self.dis_width, self.dis_height, self.snake_block)
                 length_of_snake += 1
                 self.food_eaten += 1
 
+            # check collision with powerup
             if self.food_eaten >= 10 and x1 >= self.powerup.foodx - self.powerup.ntol and x1 <= self.powerup.foodx + self.powerup.ptol and y1 >= self.powerup.foody - self.powerup.ntol and y1 <= self.powerup.foody + self.powerup.ptol:
                 self.powerup.update_position(self.dis_width, self.dis_height, self.snake_block)
-                length_of_snake += 3  # Increase snake length by 3
+                length_of_snake += 5  # Increase snake length by 5
+                self.food_eaten = 0
 
-            # Check collision with any obstacle
+            # check collision with any obstacle
             if self.obstacle.check_collision(x1, y1, self.snake_block):
                 game_close = True  # Game over due to collision with any obstacle
-
 
             self.clock.tick(self.snake_speed)
 
